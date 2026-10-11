@@ -1,0 +1,105 @@
+# Netlify — admin SPA (Vite → admin/dist) + serverless blast API.
+# Audiences CRUD uses browser Supabase (anon/authenticated RLS) in production.
+# Blast test/send use Netlify Functions with SUPABASE_SERVICE_ROLE_KEY + RESEND_*.
+# Prefer client-orchestrated /send-one (free-tier 10s limit) over bulk /send.
+
+[build]
+  command = "npm run build"
+  publish = "admin/dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "20"
+  # VITE_EXPRESS_API_URL and VITE_API_BASE_URL come from the Netlify UI.
+  # They point discovery runs and autopilot at Railway. Leave them unset
+  # here so an empty toml value cannot wipe the site configuration.
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Blast API (must precede SPA fallback).
+# Pass campaignId as a path segment — query placeholders are not always substituted.
+[[redirects]]
+  from = "/api/blasts/:campaignId/test"
+  to = "/.netlify/functions/blast-test/:campaignId"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/blasts/:campaignId/send-one"
+  to = "/.netlify/functions/blast-send-one/:campaignId"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/blasts/:campaignId/send"
+  to = "/.netlify/functions/blast-send/:campaignId"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/blasts/:campaignId/sends"
+  to = "/.netlify/functions/blast-sends/:campaignId"
+  status = 200
+  force = true
+
+# Gmail reply poll. Hit on a schedule once OAuth env is set (see docs/webhook-setup.md).
+[[redirects]]
+  from = "/api/gmail/sync-replies"
+  to = "/.netlify/functions/gmail-reply-sync"
+  status = 200
+  force = true
+
+# App Store lookup (browser cannot call iTunes directly because of CORS).
+[[redirects]]
+  from = "/api/app-store"
+  to = "/.netlify/functions/app-store-search"
+  status = 200
+  force = true
+
+# Avatar proxy. Social CDNs expire and block hotlinking.
+[[redirects]]
+  from = "/api/avatars"
+  to = "/.netlify/functions/avatar"
+  status = 200
+  force = true
+
+# Rendered template test for pitches and follow-ups.
+[[redirects]]
+  from = "/api/email/test"
+  to = "/.netlify/functions/template-test"
+  status = 200
+  force = true
+
+# Follow-up bump for a sent lead.
+[[redirects]]
+  from = "/api/follow-up"
+  to = "/.netlify/functions/follow-up-send"
+  status = 200
+  force = true
+
+# Async Apify discovery. Start returns immediately; the client polls the job.
+[[redirects]]
+  from = "/api/discovery/jobs"
+  to = "/.netlify/functions/discovery-start"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/discovery/jobs/:jobId/continue"
+  to = "/.netlify/functions/discovery-continue/:jobId"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/discovery/jobs/:jobId"
+  to = "/.netlify/functions/discovery-poll/:jobId"
+  status = 200
+  force = true
+
+# SPA fallback
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

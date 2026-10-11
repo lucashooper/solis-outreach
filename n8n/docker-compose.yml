@@ -1,0 +1,23 @@
+# Local n8n for optional secondary orchestration.
+# Express API is the preferred v1 path for discovery + Resend.
+#
+#   cd n8n && docker compose up -d
+#   Open http://localhost:5678
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    ports:
+      - '5678:5678'
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=Europe/London
+      - TZ=Europe/London
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  n8n_data:
