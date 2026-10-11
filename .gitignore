@@ -1,0 +1,31 @@
+# Dependencies and build output
+node_modules/
+dist/
+admin/dist/
+admin/node_modules/
+*.tsbuildinfo
+
+# Secrets and local env. Example files stay tracked.
+.env
+.env.*
+admin/.env
+admin/.env.*
+!.env.example
+!admin/.env.example
+*.secrets
+SETUP-DETAILS.md
+
+# OS and editor
+.DS_Store
+*.log
+.vscode/
+.idea/
+
+# Runtime email template
+data/email-template.md
+
+# Netlify CLI local state and generated function bundles
+.netlify/
+netlify/functions/discovery-start.js
+netlify/functions/discovery-poll.js
+netlify/functions/discovery-continue.js
